@@ -40,7 +40,9 @@ import {
 function* handleFetchGames(action: ReturnType<typeof fetchGamesStart>): Generator {
   try {
     const { data }: any = yield call(axios.get, `/game-api/games/${action.payload || ""}`);
-    yield put(fetchGamesSuccess(data.results));
+    console.log(action.payload);
+
+    yield put(fetchGamesSuccess({ games: data?.results, count: data?.count }));
 
   } catch (err: any) {
     yield put(fetchGamesFailure(err));
@@ -59,10 +61,10 @@ function* handleFetchGameStart(action: ReturnType<typeof gameStart>): Generator 
 function* handleCreateGame(action: ReturnType<typeof createGameStart>): Generator {
   try {
 
-     yield call(axios.post, "/game-api/games/", action.payload);
+    yield call(axios.post, "/game-api/games/", action.payload);
 
     yield put(createGameSuccess());
-    yield put(fetchGamesStart("")); 
+    yield put(fetchGamesStart(""));
   } catch (err: any) {
 
     yield put(createGameFailure(err));
@@ -78,7 +80,7 @@ function* handleUpdateGame(action: ReturnType<typeof updateGameStart>): Generato
     yield put(updateGameSuccess());
     console.log(res);
 
-    yield put(fetchGamesStart("")); 
+    yield put(fetchGamesStart(""));
   } catch (err: any) {
     yield put(updateGameFailure(err));
   }
@@ -101,7 +103,7 @@ function* handleActivateGame(action: ReturnType<typeof activateGameStart>): Gene
 // 🔹 4. block
 function* handleLockGame(action: ReturnType<typeof lockGameStart>): Generator {
   try {
-     yield call(axios.post, `/game-api/games/${action.payload}/lock/`);
+    yield call(axios.post, `/game-api/games/${action.payload}/lock/`);
     yield put(lockGameSuccess());
     yield put(fetchGamesStart(""));
   } catch (err: any) {
@@ -136,7 +138,7 @@ function* handleStartGame(action: ReturnType<typeof startGameStart>): Generator 
   try {
     yield call(axios.post, `/game-api/games/${action.payload}/start/`);
     yield put(startGameSuccess());
-    yield put(fetchGamesStart("")); 
+    yield put(fetchGamesStart(""));
   } catch (err: any) {
     yield put(startGameFailure(err));
   }
@@ -144,10 +146,10 @@ function* handleStartGame(action: ReturnType<typeof startGameStart>): Generator 
 
 function* handleDrawWinner(action: ReturnType<typeof drawWinnerStart>): Generator {
   try {
-    const res:any= yield call(axios.post, `/game-api/games/${action.payload}/draw/`);
+    const res: any = yield call(axios.post, `/game-api/games/${action.payload}/draw/`);
     console.log(res);
     yield put(drawWinnerSuccess(res.data));
-    yield put(fetchWinnersStart(action.payload)); 
+    yield put(fetchWinnersStart(action.payload));
   } catch (err: any) {
     console.log(err);
 

@@ -72,8 +72,9 @@ const gameSlice = createSlice({
     fetchGamesStart(state, _action: PayloadAction<string>) {
       state.loading = true;
     },
-    fetchGamesSuccess(state, action: PayloadAction<Game[]>) {
-      state.games = action.payload;
+    fetchGamesSuccess(state, action: PayloadAction<{games:Game[],count:number}>) {
+      state.games = action.payload.games;
+      state.count = action.payload.count;
       state.loading = false;
     },
     fetchGamesFailure(state, action: PayloadAction<string>) {

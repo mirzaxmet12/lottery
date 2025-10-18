@@ -89,13 +89,22 @@ const GamesPage: React.FC = () => {
 
   const { games, count, winners } = useSelector((s: RootState) => s.games);
   const { stores } = useSelector((s: RootState) => s.stores);
+  console.log(count);
+  const storeId = useSelector((s: RootState) => s.auth.user?.store.id ?? null);
+  const authUser = useSelector((s: RootState) => s.auth.user);
 
   const [page, setPage] = useState(1);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [filterStore, setFilterStore] = useState("");
+  const [filterStore, setFilterStore] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState("");
+
+  useEffect(() => {
+    if (storeId != null && authUser?.role !== 'superadmin') {
+      setFilterStore(String(storeId));
+    }
+  }, [storeId, authUser?.role]);
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -110,6 +119,7 @@ const GamesPage: React.FC = () => {
   }, [dispatch]);
 
   const handleFetch = (pageNum: number) => {
+
     let query = `?page=${pageNum}`;
     if (search) query += `&search=${encodeURIComponent(search)}`;
     if (filterStore) query += `&store=${encodeURIComponent(filterStore)}`;
@@ -310,8 +320,7 @@ const GamesPage: React.FC = () => {
 
   // pageCount safe
   const pageCount = Math.max(1, Math.ceil((count || 0) / 10));
-console.log(count);
-console.log(pageCount);
+
 
   return (
     <Box p={3}>
@@ -323,9 +332,13 @@ console.log(pageCount);
       <Box display="flex" gap={2} mb={3} flexWrap="wrap">
         <TextField label="Qidiruv" value={search} onChange={(e) => setSearch(e.target.value)} />
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Do‘kon</InputLabel>
+          <InputLabel id="demo-simple-select-label">Do‘kon</InputLabel>
           <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Do‘kon"
             native
+            disabled={storeId ? true : false}
             value={filterStore}
             onChange={(e) => setFilterStore((e.target as HTMLSelectElement).value)}
           >
@@ -339,10 +352,13 @@ console.log(pageCount);
         </FormControl>
 
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
+          <InputLabel id="demo-simple-select-label">Status</InputLabel>
           <Select
-            native
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="status"
             value={filterStatus}
+            native
             onChange={(e) => setFilterStatus((e.target as HTMLSelectElement).value)}
           >
             <option value=""></option>
@@ -399,10 +415,10 @@ console.log(pageCount);
                     g.status === "draft"
                       ? "Qoralama"
                       : g.status === "finished"
-                      ? "Tugagan"
-                      : g.status === "locked"
-                      ? "Bloklangan"
-                      : "Faol"
+                        ? "Tugagan"
+                        : g.status === "locked"
+                          ? "Bloklangan"
+                          : "Faol"
                   }
                   color={
                     g.status === "draft" ? "default" : g.status === "active" ? "success" : g.status === "locked" ? "warning" : "error"
@@ -529,8 +545,11 @@ console.log(pageCount);
 
           <FormControl>
             <InputLabel>Do‘kon</InputLabel>
-            <Select native value={form.store} onChange={(e) => setForm({ ...form, store: (e.target as HTMLSelectElement).value })}>
-              <option value="">Tanlang</option>
+            <Select label='Dokon' native
+              value={storeId ? storeId : form.store}
+              disabled={storeId ? true : false}
+              onChange={(e) => setForm({ ...form, store: (e.target as HTMLSelectElement).value })}>
+              {/* <option value=""></option> */}
               {stores.map((s: any) => (
                 <option key={s.id} value={String(s.id)}>
                   {s.name}
@@ -544,8 +563,17 @@ console.log(pageCount);
               control={<Checkbox checked={form.all_clients} onChange={(e) => setForm({ ...form, all_clients: e.target.checked })} />}
               label="Barchaga (all_clients)"
             />
-            <TextField label="Bonusdan" type="number" value={form.from_bonus} onChange={(e) => setForm({ ...form, from_bonus: e.target.value })} sx={{ width: 150 }} />
-            <TextField label="Bonusgacha" type="number" value={form.to_bonus} onChange={(e) => setForm({ ...form, to_bonus: e.target.value })} sx={{ width: 150 }} />
+            <TextField
+              label="Bonusdan"
+              type="number"
+              disabled={form.all_clients}
+              value={form.from_bonus}
+              onChange={(e) => setForm({ ...form, from_bonus: e.target.value })} sx={{ width: 150 }} />
+            <TextField
+              label="Bonusgacha"
+              type="number" value={form.to_bonus}
+              disabled={form.all_clients}
+              onChange={(e) => setForm({ ...form, to_bonus: e.target.value })} sx={{ width: 150 }} />
           </Stack>
 
           <Typography variant="subtitle1">🎁 Sovrinlar</Typography>
